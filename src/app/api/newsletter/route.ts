@@ -3,31 +3,39 @@ import nodemailer from 'nodemailer';
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
-
+    
     if (!email) {
       return Response.json({ error: 'Email is required' }, { status: 400 });
     }
-
+    
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return Response.json({ error: 'Invalid email format' }, { status: 400 });
     }
-
-    // Create transporter with proper SMTP configuration
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.hostinger.com',
-      port: 465,
-      secure: true, // Use TLS for port 465
+    
+    // Check if environment variables are set
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP credentials not configured');
+      return Response.json({ 
+        error: 'Email service not configured. Please try again later.' 
+      }, { status: 500 });
+    }
+    
+    // Create transporter with environment variables
+    const transporter = nodemailer.createTransporter({
+      host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+      port: parseInt(process.env.SMTP_PORT || '465'),
+      secure: process.env.SMTP_SECURE === 'true' || true, // Use TLS for port 465
       auth: {
-        user: 'null',
-        pass: 'null'
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
       }
     });
-
+    
     // Email content
     const mailOptions = {
-      from: '"Nounsletter" <nounsletter@xppai.io>',
+      from: `"Nounsletter" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
       to: email,
       subject: '🏛️ Welcome to Nouns Proposals Newsletter!',
       html: `
@@ -63,19 +71,19 @@ export async function POST(request: Request) {
         </div>
       `
     };
-
+    
     // Send email
     await transporter.sendMail(mailOptions);
-
+    
     return Response.json({ 
       success: true, 
       message: 'Newsletter subscription confirmed! Check your email.' 
     });
-
+    
   } catch (error) {
     console.error('Newsletter subscription error:', error);
     return Response.json({ 
       error: 'Failed to send confirmation email. Please try again.' 
     }, { status: 500 });
   }
-} 
+}
