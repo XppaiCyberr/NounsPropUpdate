@@ -16,9 +16,18 @@ export default function NewsletterSubscription() {
   const { sendCalls, data, error, isPending } = useSendCalls();
   const { connect, connectors } = useConnect();
 
-  // Function to get callback URL
+  // Function to get callback URL from environment variable
   function getCallbackURL() {
-    return "https://nounsupdate.vercel.app/api/data-validation";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL;
+    
+    if (!baseUrl) {
+      console.warn("NEXT_PUBLIC_APP_URL not set, falling back to default");
+      return "https://nounsupdate.vercel.app/api/data-validation";
+    }
+    
+    // Ensure URL has protocol
+    const url = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+    return `${url}/api/data-validation`;
   }
 
   // Handle response data when sendCalls completes
@@ -187,4 +196,4 @@ export default function NewsletterSubscription() {
       </div>
     </div>
   );
-} 
+}
