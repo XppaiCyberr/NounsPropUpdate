@@ -11,8 +11,8 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Smart Wallet Profiles Demo',
-  description: 'Smart Wallet Profiles Demo',
+  title: 'Nouns Proposals Update',
+  description: 'Stay updated with the latest Nouns DAO proposals and governance updates',
 }
 
 export default function RootLayout(props: { children: ReactNode }) {
